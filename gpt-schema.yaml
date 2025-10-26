@@ -409,7 +409,10 @@ paths:
   /analyze:
     post:
       operationId: analyze
-      summary: Run full SMC analysis on a symbol
+      summary: Run full Smart Money Concepts (SMC) analysis on a symbol
+      description: >
+        Returns full multi-timeframe SMC analysis (HTF, MTF, LTF) from the user's cTrader backend.
+        ⚠️ Provides only technical data. Fundamentals must be fetched separately from web sources (e.g., Yahoo Finance).
       requestBody:
         required: true
         content:
@@ -421,10 +424,10 @@ paths:
               properties:
                 symbol:
                   type: string
-                  description: Symbol to analyze (e.g., "EURUSD" or "AMD.US")
+                  description: Symbol to analyze (e.g., "EURUSD", "XAUUSD", "AAPL.US")
       responses:
         "200":
-          description: Analysis result
+          description: Technical market structure analysis
           content:
             application/json:
               schema:
@@ -435,14 +438,29 @@ paths:
                     description: Macro trend direction from D1 timeframe
                   MTF_Zones:
                     type: object
+                    description: Multi-timeframe order blocks and fair value gaps
                   LTF_Entry:
                     type: object
+                    description: Low timeframe entry details (M15/M5)
+                  Previous_Day_High:
+                    type: number
+                  Previous_Day_Low:
+                    type: number
+                  Session_Levels:
+                    type: object
+                    description: Session highs and lows (Asia, London, NY, PostNY)
+                  Checklist:
+                    type: object
+                    description: Full technical checklist (CHOCH, OB, FVG, Sweep, Candle)
                   News:
                     type: string
                     nullable: true
+                    description: Market news summary (if available)
                   Fundamentals:
                     type: object
                     nullable: true
+                    description: >
+                      Placeholder for fundamental data — fetched by ChatGPT from web sources after technical analysis.
                     properties:
                       company_name:
                         type: string
@@ -462,15 +480,17 @@ paths:
                         type: number
                       sentiment:
                         type: string
+                        description: "Bullish, Neutral, or Bearish sentiment"
 
   /fundamental-data:
     post:
+      deprecated: true
       operationId: fetchFundamentalData
-      summary: Fetch key fundamental metrics for a stock symbol
+      summary: (Deprecated) Fetch fundamental metrics for a stock
       description: >
-        Retrieves core fundamental data for a stock (US, UK, DE symbols, etc.).
-        May use web search or financial APIs (e.g., Yahoo Finance, Finnhub, FMP).
-        Used optionally for stock analysis.
+        ⚠️ Deprecated endpoint. Do not call this API. 
+        Fundamentals must be fetched from web sources 
+        (e.g., Yahoo Finance, MarketWatch, TradingView, FMP, Finviz).
       requestBody:
         required: true
         content:
@@ -482,45 +502,7 @@ paths:
               properties:
                 symbol:
                   type: string
-                  description: Stock symbol (e.g., "AMD.US", "AAPL.US", "TSLA.US")
+                  description: Stock symbol (e.g., "AAPL.US", "AMD.US", "TSLA.US")
       responses:
-        "200":
-          description: Fundamental data retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  symbol:
-                    type: string
-                  company_name:
-                    type: string
-                  market_cap:
-                    type: string
-                  pe_ratio:
-                    type: number
-                    nullable: true
-                  eps:
-                    type: number
-                    nullable: true
-                  pb_ratio:
-                    type: number
-                    nullable: true
-                  ps_ratio:
-                    type: number
-                    nullable: true
-                  roe:
-                    type: number
-                    nullable: true
-                  roa:
-                    type: number
-                    nullable: true
-                  sentiment:
-                    type: string
-                  last_updated:
-                    type: string
-                    format: date-time
-        "404":
-          description: Fundamental data not found
-        "500":
-          description: Error retrieving fundamental data
+        "410":
+          description: Deprecated endpoint — do not use.
