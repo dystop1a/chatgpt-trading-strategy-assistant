@@ -1,7 +1,7 @@
 # app.py
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel          # ←  put this line back
-from typing import Optional, Literal
+from pydantic import BaseModel , Field         # ←  put this line back
+from typing import Optional, Literal, Dict
 from notion_client import Client as NotionClient
 from ctrader_client import (
     init_client,                       # still need this
@@ -361,12 +361,20 @@ class MTFZones(BaseModel):
     H1_FVG: Optional[dict] = None
 
 
+class CHOCHModel(BaseModel):
+    macro: Optional[dict] = None
+    minor: Optional[dict] = None
+
+class OBModel(BaseModel):
+    macro: Optional[dict] = None
+    minor: Optional[dict] = None
+
 class Checklist(BaseModel):
-    CHOCH: Optional[dict]
-    OB: Optional[dict]
-    FVG: Optional[dict]
-    Sweep: Optional[dict]
-    Candle: Optional[dict]
+    CHOCH: CHOCHModel = Field(default_factory=CHOCHModel)
+    OB: OBModel = Field(default_factory=OBModel)
+    FVG: Optional[dict] = None
+    Sweep: Optional[dict] = None
+    Candle: Optional[dict] = None
 
 class AnalyzeResponse(BaseModel):
     HTF_Bias: str
@@ -438,10 +446,14 @@ async def analyze(req: AnalyzeRequest):
         m5_choch_data = detect_choch(candles["M5"], macro_threshold=100)
 
         checklist = {
-            "Macro_CHOCH": m5_choch_data.get("macro") if m5_choch_data else None,
-            "Minor_CHOCH": m5_choch_data.get("minor") if m5_choch_data else None,
-            "Macro_OB": m15_ob_data.get("macro") if m15_ob_data else None,
-            "Minor_OB": m15_ob_data.get("minor") if m15_ob_data else None,
+            "CHOCH": {
+                "macro": m5_choch_data.get("macro") if m5_choch_data else None,
+                "minor": m5_choch_data.get("minor") if m5_choch_data else None,
+            },
+            "OB": {
+                "macro": m15_ob_data.get("macro") if m15_ob_data else None,
+                "minor": m15_ob_data.get("minor") if m15_ob_data else None,
+            },
             "FVG": detect_fvg(candles["M15"]),
             "Sweep": detect_sweep(tagged_m15, pdh, pdl, session_levels),
             "Candle": candle_dict,

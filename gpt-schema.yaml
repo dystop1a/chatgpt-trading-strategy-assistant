@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Ctrader OpenApi Market Data  
+  title: Ctrader OpenApi Market Data
   version: 1.1.2
 servers:
   - url: https://chatgpt-trading-strategy-assistant.onrender.com
@@ -24,7 +24,7 @@ paths:
                   description: Broker-specific symbol name (e.g., "EURUSD", "EURUSD.a")
                 timeframe:
                   type: string
-                  default: "M5"
+                  default: M5
                   description: Timeframe (e.g., M1, M5, H1, H4, D1)
                 num_bars:
                   type: integer
@@ -33,7 +33,7 @@ paths:
                   type: boolean
                   default: false
       responses:
-        '200':
+        "200":
           description: Market data or chart image
           content:
             application/json:
@@ -65,7 +65,7 @@ paths:
                           type: number
                   chart_image_base64:
                     type: string
-        '404':
+        "404":
           description: Symbol or timeframe not found
 
   /journal-entry:
@@ -112,7 +112,7 @@ paths:
                   type: number
                 order_type:
                   type: string
-                status:   # 👈 optional
+                status:
                   type: string
                 note:
                   type: string
@@ -127,7 +127,7 @@ paths:
                   type: string
                   nullable: true
       responses:
-        '200':
+        "200":
           description: Journal entry created successfully
           content:
             application/json:
@@ -137,15 +137,12 @@ paths:
                   status:
                     type: string
 
-
-
-
   /open-positions:
     get:
       operationId: getOpenPositions
       summary: Retrieve currently open positions from cTrader
       responses:
-        '200':
+        "200":
           description: List of open positions
           content:
             application/json:
@@ -181,7 +178,7 @@ paths:
                           type: string
                         timestamp_local:
                           type: string
-        '500':
+        "500":
           description: Failed to retrieve open positions
 
   /place-order:
@@ -217,7 +214,7 @@ paths:
                 take_profit:
                   type: number
       responses:
-        '200':
+        "200":
           description: Trade executed successfully
           content:
             application/json:
@@ -228,11 +225,10 @@ paths:
                     type: string
                   order_id:
                     type: integer
-        '400':
+        "400":
           description: Invalid order parameters
-        '500':
+        "500":
           description: Server error during order execution
-
 
   /tag-sessions:
     post:
@@ -244,18 +240,14 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - candles
               properties:
                 candles:
                   type: array
                   items:
                     type: object
-                    required:
-                      - time
-                      - open
-                      - high
-                      - low
-                      - close
-                      - volume
+                    required: [time, open, high, low, close, volume]
                     properties:
                       time:
                         type: string
@@ -270,10 +262,8 @@ paths:
                         type: number
                       volume:
                         type: integer
-              required:
-                - candles
       responses:
-        '200':
+        "200":
           description: Session-labeled OHLC candles
           content:
             application/json:
@@ -297,20 +287,14 @@ paths:
                       type: integer
                     session:
                       type: string
-                      enum:
-                        - Asia
-                        - London
-                        - NewYork
-                        - PostNY
-                        - Unknown
-
+                      enum: [Asia, London, NewYork, PostNY, Unknown]
 
   /pending-orders:
     get:
       operationId: getPendingOrders
       summary: Retrieve currently pending limit/stop orders from cTrader
       responses:
-        '200':
+        "200":
           description: List of pending orders
           content:
             application/json:
@@ -347,9 +331,8 @@ paths:
                           type: number
                         creation_time:
                           type: string
-        '500':
+        "500":
           description: Failed to retrieve pending orders
-
 
   /session-levels:
     post:
@@ -366,14 +349,7 @@ paths:
                   type: array
                   items:
                     type: object
-                    required:
-                      - time
-                      - open
-                      - high
-                      - low
-                      - close
-                      - volume
-                      - session
+                    required: [time, open, high, low, close, volume, session]
                     properties:
                       time:
                         type: string
@@ -392,7 +368,7 @@ paths:
                         type: string
                         enum: [Asia, London, NewYork, PostNY, Unknown]
       responses:
-        '200':
+        "200":
           description: Session-level highs and lows
           content:
             application/json:
@@ -427,115 +403,124 @@ paths:
                         type: number
                       low:
                         type: number
-        '500':
+        "500":
           description: Error processing session levels
 
-/analyze:
-  post:
-    operationId: analyze
-    summary: Run full SMC analysis on a symbol
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              symbol:
-                type: string
-                description: Symbol to analyze (e.g., "EURUSD")
-            required:
-              - symbol
-    responses:
-      '200':
-        description: Analysis result
+  /analyze:
+    post:
+      operationId: analyze
+      summary: Run full SMC analysis on a symbol
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - symbol
               properties:
-                HTF_Bias:
+                symbol:
                   type: string
-                  description: Macro trend direction from D1 timeframe
-                MTF_Zones:
-                  type: object
-                  properties:
-                    H4_OB:
-                      type: object
-                      properties:
-                        macro:
-                          type: object
-                          nullable: true
-                        minor:
-                          type: object
-                          nullable: true
-                    H1_OB:
-                      type: object
-                      properties:
-                        macro:
-                          type: object
-                          nullable: true
-                        minor:
-                          type: object
-                          nullable: true
-                    H4_FVG:
-                      type: object
-                      nullable: true
-                    H1_FVG:
-                      type: object
-                      nullable: true
-                LTF_Entry:
-                  type: object
-                  properties:
-                    entry_type:
-                      type: string
-                    entry_price:
-                      type: number
-                      nullable: true
-                    stop_loss:
-                      type: number
-                      nullable: true
-                    take_profit:
-                      type: number
-                      nullable: true
-                    notes:
-                      type: string
-                Previous_Day_High:
-                  type: number
-                Previous_Day_Low:
-                  type: number
-                Session_Levels:
-                  type: object
-                Checklist:
-                  type: object
-                  properties:
-                    CHOCH:
-                      type: object
-                      properties:
-                        macro:
-                          type: object
-                          nullable: true
-                        minor:
-                          type: object
-                          nullable: true
-                    OB:
-                      type: object
-                      properties:
-                        macro:
-                          type: object
-                          nullable: true
-                        minor:
-                          type: object
-                          nullable: true
-                    FVG:
-                      type: object
-                      nullable: true
-                    Sweep:
-                      type: object
-                    Candle:
-                      type: object
-                      nullable: true
-                News:
+                  description: Symbol to analyze (e.g., "EURUSD" or "AMD.US")
+      responses:
+        "200":
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HTF_Bias:
+                    type: string
+                    description: Macro trend direction from D1 timeframe
+                  MTF_Zones:
+                    type: object
+                  LTF_Entry:
+                    type: object
+                  News:
+                    type: string
+                    nullable: true
+                  Fundamentals:
+                    type: object
+                    nullable: true
+                    properties:
+                      company_name:
+                        type: string
+                      market_cap:
+                        type: string
+                      pe_ratio:
+                        type: number
+                      eps:
+                        type: number
+                      pb_ratio:
+                        type: number
+                      ps_ratio:
+                        type: number
+                      roe:
+                        type: number
+                      roa:
+                        type: number
+                      sentiment:
+                        type: string
+
+  /fundamental-data:
+    post:
+      operationId: fetchFundamentalData
+      summary: Fetch key fundamental metrics for a stock symbol
+      description: >
+        Retrieves core fundamental data for a stock (US, UK, DE symbols, etc.).
+        May use web search or financial APIs (e.g., Yahoo Finance, Finnhub, FMP).
+        Used optionally for stock analysis.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - symbol
+              properties:
+                symbol:
                   type: string
-
-
+                  description: Stock symbol (e.g., "AMD.US", "AAPL.US", "TSLA.US")
+      responses:
+        "200":
+          description: Fundamental data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  symbol:
+                    type: string
+                  company_name:
+                    type: string
+                  market_cap:
+                    type: string
+                  pe_ratio:
+                    type: number
+                    nullable: true
+                  eps:
+                    type: number
+                    nullable: true
+                  pb_ratio:
+                    type: number
+                    nullable: true
+                  ps_ratio:
+                    type: number
+                    nullable: true
+                  roe:
+                    type: number
+                    nullable: true
+                  roa:
+                    type: number
+                    nullable: true
+                  sentiment:
+                    type: string
+                  last_updated:
+                    type: string
+                    format: date-time
+        "404":
+          description: Fundamental data not found
+        "500":
+          description: Error retrieving fundamental data
