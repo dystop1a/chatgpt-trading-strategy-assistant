@@ -269,8 +269,9 @@ async def open_positions():
         raise HTTPException(status_code=500, detail=str(e))
 
 # 🎯 Execute Trade Order
+
 @app.post("/place-order")
-def execute_trade(order: PlaceOrderRequest):
+def place_order_main(order: PlaceOrderRequest):
     try:
         if not wait_until_symbols_loaded():
             raise HTTPException(status_code=503, detail="Symbols not loaded yet. Try again shortly.")
@@ -280,16 +281,10 @@ def execute_trade(order: PlaceOrderRequest):
             raise HTTPException(status_code=404, detail=f"Symbol '{order.symbol}' not found.")
 
         symbol_id = symbol_name_to_id[symbol_key]
-
         print(f"[ORDER DEBUG] Sending order: {order=}, {symbol_id=}")
-        
-        # 🔄 Normalize volume
-        # 🔄 Normalize volume
-        volume_raw = int(order.volume)  # assume raw units passed from frontend (e.g. 1 lot = 10_000_000 for Forex)
 
+        volume_raw = int(order.volume)
 
-
-        # Submit order
         deferred = place_order(
             client=client,
             account_id=ACCOUNT_ID,
@@ -302,9 +297,6 @@ def execute_trade(order: PlaceOrderRequest):
             take_profit=order.take_profit
         )
 
-
-
-
         result = wait_for_deferred(deferred, timeout=12)
 
         if isinstance(result, str):
@@ -312,17 +304,18 @@ def execute_trade(order: PlaceOrderRequest):
         elif not isinstance(result, dict):
             result = {"result": str(result)}
 
-        return {
-            "status": "success",
-            "submitted": True,
-            "details": result
-        }
+        return {"status": "success", "order_id": int(time.time()), "details": result}
 
     except HTTPException:
         raise
     except Exception as e:
         print(f"[ERROR] Failed placing order: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/placeOrder")
+def place_order_alias(order: PlaceOrderRequest):
+    return place_order_main(order)
+
 
 @app.on_event("shutdown")
 async def stop_ctrader():
