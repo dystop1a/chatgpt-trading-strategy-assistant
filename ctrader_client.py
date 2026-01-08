@@ -37,7 +37,8 @@ ACCOUNT_ID = int(os.getenv("CTRADER_ACCOUNT_ID"))
 HOST_TYPE = os.getenv("CTRADER_HOST_TYPE")
 
 
-host = EndPoints.PROTOBUF_LIVE_HOST if HOST_TYPE.lower() == "live" else EndPoints.PROTOBUF_DEMO_HOST
+#host = EndPoints.PROTOBUF_LIVE_HOST if HOST_TYPE.lower() == "live" else EndPoints.PROTOBUF_DEMO_HOST
+host = EndPoints.PROTOBUF_DEMO_HOST
 client = Client(host, EndPoints.PROTOBUF_PORT, TcpProtocol)
 
 # ── symbol maps ────────────────────────────────────────────────────────────
